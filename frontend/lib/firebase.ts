@@ -3,8 +3,8 @@ import { getAuth } from "firebase/auth";
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
 
-let auth: any = null;
 let app: any = null;
+let auth: any = null;
 
 if (!DEMO_MODE) {
   const firebaseConfig = {
