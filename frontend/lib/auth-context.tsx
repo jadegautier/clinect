@@ -26,32 +26,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // ✅ Demo mode: bypass Firebase auth completely
-    if (DEMO_MODE) {
-      setUser(
-        {
-          uid: "demo-user",
-          email: "demo@clinect.app",
-          displayName: "Demo User",
-        } as unknown as User
-      );
-      setLoading(false);
-      return;
-    }
-
-    let unsubscribe: (() => void) | undefined;
-
-(async () => {
-  const { auth } = await import("./firebase");
-  unsubscribe = onAuthStateChanged(auth, (user) => {
-    setUser(user);
+  // ✅ Demo mode: bypass Firebase completely
+  if (process.env.NEXT_PUBLIC_DEMO_MODE === "true") {
+    setUser(
+      {
+        uid: "demo-user",
+        email: "demo@clinect.app",
+        displayName: "Demo User",
+      } as any
+    );
     setLoading(false);
-  });
-})();
+    return;
+  }
 
-return () => unsubscribe?.();
+  // Normal mode: Firebase auth
+  let unsubscribe: any;
 
-  }, []);
+  (async () => {
+    const { auth } = await import("./firebase");
+    const { onAuthStateChanged } = await import("firebase/auth");
+
+    unsubscribe = onAuthStateChanged(auth, (user) => {
+      setUser(user);
+      setLoading(false);
+    });
+  })();
+
+  return () => unsubscribe?.();
+}, []);
 
   return (
     <AuthContext.Provider value={{ user, loading }}>
