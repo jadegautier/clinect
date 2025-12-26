@@ -267,10 +267,12 @@ def firebase_login():
 
 @app.route('/api/login', methods=['POST'])
 def login():
+    """Legacy login - accepts any username/password (for backwards compatibility)"""
     data = request.json
     username = data.get('username')
 
     if username:
+        # Get or create user in database
         user = models.get_or_create_user(username)
         session['user'] = username
         session['user_id'] = user['id']
