@@ -8,7 +8,7 @@ import React, {
   ReactNode,
 } from "react";
 import { User, onAuthStateChanged } from "firebase/auth";
-import { auth } from "@/lib/firebase"; // adapte le chemin si besoin: "../lib/firebase"
+import { auth } from "@/lib/firebase";
 
 interface AuthContextType {
   user: User | null;
@@ -21,30 +21,51 @@ const AuthContext = createContext<AuthContextType>({
 });
 
 const DEMO_MODE = process.env.NEXT_PUBLIC_DEMO_MODE === "true";
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL || "http://localhost:5002";
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (DEMO_MODE) {
-      setUser({ uid: "demo-user", email: "demo@clinect.app" } as any);
-      setLoading(false);
-      return;
+    let unsub: (() => void) | undefined;
+
+    async function init() {
+      if (DEMO_MODE) {
+        try {
+          await fetch(`${API_BASE_URL}/api/login`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ username: "demo" }),
+          });
+        } catch (e) {
+          console.error("Demo backend login failed:", e);
+        }
+
+        setUser({ uid: "demo-user", email: "demo@clinect.app" } as any);
+        setLoading(false);
+        return;
+      }
+
+      if (!auth) {
+        setUser(null);
+        setLoading(false);
+        return;
+      }
+
+      unsub = onAuthStateChanged(auth, (u) => {
+        setUser(u);
+        setLoading(false);
+      });
     }
 
-    if (!auth) {
-      setUser(null);
-      setLoading(false);
-      return;
-    }
+    init();
 
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      setUser(u);
-      setLoading(false);
-    });
-
-    return unsubscribe;
+    return () => {
+      if (unsub) unsub();
+    };
   }, []);
 
   return (
