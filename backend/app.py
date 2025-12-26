@@ -267,19 +267,21 @@ def firebase_login():
 
 @app.route('/api/login', methods=['POST'])
 def login():
-    """Legacy login - accepts any username/password (for backwards compatibility)"""
-    data = request.json
-    username = data.get('username')
+    data = request.json or {}
+    username = data.get('username') or "demo"
 
-    if username:
-        # Get or create user in database
-        user = models.get_or_create_user(username)
-        session['user'] = username
-        session['user_id'] = user['id']
+    if DEMO_MODE:
+        session['user'] = "demo@clinect.app"
+        session['user_id'] = 0
+        session['firebase_uid'] = "demo-user"
         session.permanent = True
-        return jsonify({'success': True, 'username': username})
+        return jsonify({'success': True, 'username': username, 'demo': True})
 
-    return jsonify({'success': False, 'error': 'Username required'}), 400
+    user = models.get_or_create_user(username)
+    session['user'] = username
+    session['user_id'] = user['id']
+    session.permanent = True
+    return jsonify({'success': True, 'username': username})
 
 @app.route('/api/logout', methods=['POST'])
 def logout():
