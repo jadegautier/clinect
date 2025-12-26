@@ -49,10 +49,10 @@ else:
     print("   Chat endpoint will not work without a valid API key.")
 
 def ensure_demo_session():
-    if DEMO_MODE and 'user_id' not in session:
-        session['user'] = "demo@clinect.app"
-        session['user_id'] = 0
-        session['firebase_uid'] = "demo-user"
+    if DEMO_MODE and "user_id" not in session:
+        session["user"] = "demo@clinect.app"
+        session["user_id"] = 0
+        session["firebase_uid"] = "demo-user"
         session.permanent = True
 
 @app.before_request
