@@ -292,6 +292,7 @@ def logout():
     return jsonify({'success': True})
 
 @app.route('/api/current-user', methods=['GET'])
+ensure_demo_session()
 def current_user():
     user = session.get('user')
     firebase_uid = session.get('firebase_uid')
@@ -699,6 +700,7 @@ def get_related_trials(nct_id):
         return jsonify({'error': str(e)}), 500
 
 @app.route('/api/recommendations', methods=['GET'])
+ensure_demo_session()
 def get_recommendations():
     if 'user_id' not in session:
         return jsonify({'error': 'Not authenticated'}), 401
