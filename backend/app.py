@@ -291,9 +291,13 @@ def logout():
     session.pop('firebase_uid', None)
     return jsonify({'success': True})
 
-@app.route('/api/current-user', methods=['GET'])
+# Auto-login demo sur TOUTES les requêtes (pas une route)
+@app.before_request
 def _auto_demo_login():
-ensure_demo_session()
+    ensure_demo_session()
+
+# Route normale current-user
+@app.route('/api/current-user', methods=['GET'])
 def current_user():
     user = session.get('user')
     firebase_uid = session.get('firebase_uid')
